@@ -23,10 +23,9 @@
 
 enum DisplayState { temperature, rpms, numberOfDisplayStates };
 
-class ManualAutomaticModeState : BaseState
+class BaseNormalModeState : public BaseState
 {
     private:
-        bool _isAutomaticMode;
         DallasTemperature *_sensors;
         static int _tachCounter[NUMBER_OF_FANS];
         PciListenerImp* _listener[NUMBER_OF_FANS];
@@ -55,23 +54,23 @@ class ManualAutomaticModeState : BaseState
                 interrupts();
             }
         }
-        void GetCurrentTemperture()
+        void GetCurrentTemperature()
         {
             _sensors->requestTemperatures(); 
-            _temperture = (int)_sensors->getTempFByIndex(0);
+            _temperature = (int)_sensors->getTempFByIndex(0);
         }
         virtual void GetFanSpeedPWM()
         {
             _fanSpeedPWM = _encoderValue;
         }
     protected:
-        int _temperture;
+        int _temperature;
         int _fanSpeedPWM;
+        const char* _modeName;
     public:
-        ManualAutomaticModeState(bool isAutomaticMode, LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, DallasTemperature *sensors) : 
-            BaseState(isAutomaticMode ? automaticMode : manualMode, lcd, encoder, storedDataManager, 0, 255)
+        BaseNormalModeState(State state, LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, DallasTemperature *sensors) : 
+            BaseState(state, lcd, encoder, storedDataManager, 0, 255)
         {
-            _isAutomaticMode = isAutomaticMode;
             _sensors = sensors;  
         }
     protected:
@@ -83,7 +82,7 @@ class ManualAutomaticModeState : BaseState
             {
                 if (_displayState == temperature)
                 {
-                    snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("Temp:%3d\337 %6s"), _temperture, _isAutomaticMode ? "Auto" : "Manual");
+                    snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("Temp:%3d\337 %6s"), _temperature, _modeName);
                     _displayState = rpms;
                 }
                 else if (_displayState == rpms)
@@ -108,7 +107,7 @@ class ManualAutomaticModeState : BaseState
                 _displayState = temperature;
                 _calcCounter = 1;
             }
-            GetCurrentTemperture();
+            GetCurrentTemperature();
             GetFanSpeedPWM();
             analogWrite(FAN_PWM_PIN, _fanSpeedPWM);
         }
@@ -123,20 +122,10 @@ class ManualAutomaticModeState : BaseState
                 PciListenerImp* listener = _listener[fanNumber];
                 PciManager.removeListener(listener);
             }
-            if (!_isAutomaticMode && _storedDataManager->getManualModeFanSpeed() != _encoderValue)
-            {
-                _storedDataManager->setManualModeFanSpeed(_encoderValue);
-                _storedDataManager->save();
-            }
             BaseState::saveState();
         }
         void restoreState() override
         {
-            if (!_isAutomaticMode)
-            {
-                _encoderValue = _storedDataManager->getManualModeFanSpeed();
-            }
-
             for (int fanNumber = 0; fanNumber < NUMBER_OF_FANS; fanNumber++)
             {
                 byte fanTachPin = BASE_FAN_TACH_PIN + fanNumber;
@@ -149,4 +138,4 @@ class ManualAutomaticModeState : BaseState
         }
 };
 
-int ManualAutomaticModeState::_tachCounter[NUMBER_OF_FANS];
+int BaseNormalModeState::_tachCounter[NUMBER_OF_FANS];

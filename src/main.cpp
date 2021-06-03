@@ -9,7 +9,7 @@
 #include "main.h"
 #include "storedData.h"
 #include "stateMgr.h"
-#include "manualAutomaticModeState.h"
+#include "baseNormalModeState.h"
 
 
 // Set up the Temperture Sensor

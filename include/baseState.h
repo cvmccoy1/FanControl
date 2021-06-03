@@ -7,7 +7,7 @@
 #define LCD_ROWS    2
 #define LCD_COLUMNS 16
 
-enum State { manualMode, automaticMode, modeSetup, onTempSetup, offTempSetup, tenPercentIncreaseSetup, tenPercentDecreaseSetup, exitSetup, numberOfStates };
+enum State { manualMode, automaticMode, modeSetup, desiredTempSetup, displayedSetup, exitSetup, numberOfStates };
 
 class BaseState
 {

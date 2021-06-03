@@ -1,9 +1,9 @@
 #pragma once
 
 #include <PID_v1.h>
-#include "manualAutomaticModeState.h"
+#include "baseNormalModeState.h"
 
-class AutomaticModeState : ManualAutomaticModeState
+class AutomaticModeState : public BaseNormalModeState
 {
     private:
         PID *_myPID = nullptr;
@@ -14,8 +14,8 @@ class AutomaticModeState : ManualAutomaticModeState
         //integral parameter
         double kd=2; //1;   //derivative parameter
 
-        // Input: the current temperture
-        double currentTemperture;
+        // Input: the current temperature
+        double currentTemperature;
 
         // Output: the PWM value (between minimum and maximum PWM).
         double command;
@@ -23,15 +23,16 @@ class AutomaticModeState : ManualAutomaticModeState
         double commandMax = 255;
 
         //Setpoint: the desired temperture;
-        double desiredTemperture;
+        double desiredTemperature;
         
     public:
         AutomaticModeState(LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, DallasTemperature *sensors) :
-            ManualAutomaticModeState(true, lcd, encoder, storedDataManager, sensors)
+            BaseNormalModeState(automaticMode, lcd, encoder, storedDataManager, sensors)
         {
-            desiredTemperture = 88; //storedDataManager->getOnTemperture();
+            _modeName = "Auto";
+            desiredTemperature = _storedDataManager->getDesiredTemperature();
             //init PID
-            _myPID = new PID(&currentTemperture, &command, &desiredTemperture, kp, ki, kd, REVERSE);
+            _myPID = new PID(&currentTemperature, &command, &desiredTemperature, kp, ki, kd, REVERSE);
             //turn the PID on
             _myPID->SetMode(AUTOMATIC);
             _myPID->SetOutputLimits(commandMin, commandMax);
@@ -44,14 +45,8 @@ class AutomaticModeState : ManualAutomaticModeState
 
         void GetFanSpeedPWM() override
         {
-            currentTemperture = _temperture;
+            currentTemperature = _temperature;
             _myPID->Compute();
             _fanSpeedPWM = command;
-            Serial.print(F("Temperture: "));
-            Serial.print(currentTemperture);
-            Serial.print(F(" Desired: "));
-            Serial.print(desiredTemperture);
-            Serial.print(F(" Command: "));
-            Serial.println(command);
         }
 };

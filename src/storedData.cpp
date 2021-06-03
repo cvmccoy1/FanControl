@@ -19,17 +19,13 @@ void StoredDataManager::save()
 
 OperationMode StoredDataManager::getMode()           { return _storedData.mode; }
 int StoredDataManager::getManualModeFanSpeed()       { return _storedData.manualModeFanSpeed; }
-int StoredDataManager::getOnTemperture()             { return _storedData.onTemperture; }
-int StoredDataManager::getOffTemperture()            { return _storedData.offTemperture; }
-int StoredDataManager::getTenPercentIncreaseDegree() { return _storedData.tenPercentIncreaseDegree; }
-int StoredDataManager::getTenPercentDecreaseDegree() { return _storedData.tenPercentDecreaseDegree; }
+int StoredDataManager::getDesiredTemperature()        { return _storedData.desiredTemperature; }
+bool StoredDataManager::getIsRpmsDisplayed()         { return _storedData.isRpmsDisplayed; }
 
 void StoredDataManager::setMode(OperationMode mode)             { _storedData.mode = mode; }
 void StoredDataManager::setManualModeFanSpeed(int fanSpeed)     { _storedData.manualModeFanSpeed = fanSpeed; }
-void StoredDataManager::setOnTemperture(int temp)               { _storedData.onTemperture = temp; }
-void StoredDataManager::setOffTemperture(int temp)              { _storedData.offTemperture = temp; }
-void StoredDataManager::setTenPercentIncreaseDegree(int degree) { _storedData.tenPercentIncreaseDegree = degree; }
-void StoredDataManager::setTenPercentDecreaseDegree(int degree) { _storedData.tenPercentDecreaseDegree = degree; }
+void StoredDataManager::setDesiredTemperature(int temp)          { _storedData.desiredTemperature = temp; }
+void StoredDataManager::setIsRpmsDisplayed(bool isDisplayed)    { _storedData.isRpmsDisplayed = isDisplayed; }
 
 // Validates the Setup Data values read from the EEPROM.  
 // They should only be invalid until the first write to the EEPROM.
@@ -39,20 +35,8 @@ void StoredDataManager::validateStoredData()
     {
         _storedData.mode = manual;
     }
-    if (_storedData.onTemperture < ON_TEMP_MIN || _storedData.onTemperture > ON_TEMP_MAX)
+    if (_storedData.desiredTemperature < DESIRED_TEMP_MIN || _storedData.desiredTemperature > DESIRED_TEMP_MAX)
     {
-        _storedData.onTemperture = ON_TEMP_DEFAULT;
-    }
-    if (_storedData.offTemperture < OFF_TEMP_MIN || _storedData.offTemperture > OFF_TEMP_MAX)
-    {
-        _storedData.offTemperture = OFF_TEMP_DEFAULT;
-    }
-    if (_storedData.tenPercentIncreaseDegree < TEN_PERCENT_INC_DEC_DEGREE_MIN || _storedData.tenPercentIncreaseDegree > TEN_PERCENT_INC_DEC_DEGREE_MAX)
-    {
-        _storedData.tenPercentIncreaseDegree = TEN_PERCENT_INC_DEGREE_DEFAULT;
-    }
-    if (_storedData.tenPercentDecreaseDegree < TEN_PERCENT_INC_DEC_DEGREE_MIN || _storedData.tenPercentDecreaseDegree > TEN_PERCENT_INC_DEC_DEGREE_MAX)
-    {
-        _storedData.tenPercentDecreaseDegree = TEN_PERCENT_DEC_DEGREE_DEFAULT;
+        _storedData.desiredTemperature = DESIRED_TEMP_DEFAULT;
     }
 }

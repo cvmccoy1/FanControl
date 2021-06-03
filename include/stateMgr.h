@@ -1,5 +1,6 @@
 #pragma once
 
+#include "manualModeState.h"
 #include "automaticModeState.h"
 
 class StateManager
@@ -11,7 +12,7 @@ class StateManager
         StateManager() {}
         void init(LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, DallasTemperature *sensors)
         {
-            _statesObjects[manualMode]    = (BaseState *)(new ManualAutomaticModeState(false, lcd, encoder, storedDataManager, sensors));
+            _statesObjects[manualMode]    = (BaseState *)(new ManualModeState(lcd, encoder, storedDataManager, sensors));
             _statesObjects[automaticMode] = (BaseState *)(new AutomaticModeState(lcd, encoder, storedDataManager, sensors));
             _currentState = manualMode;
             _statesObjects[_currentState]->OnEntry();
