@@ -1,10 +1,12 @@
+#pragma once
+
 #include "baseNormalModeState.h"
 
 class ManualModeState : public BaseNormalModeState
 {
     public:
-        ManualModeState(LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, DallasTemperature *sensors) :
-            BaseNormalModeState(manualMode, lcd, encoder, storedDataManager, sensors)
+        ManualModeState(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) :
+            BaseNormalModeState(manualMode, lcd, storedDataManager)
         {
             _modeName = "Manual";
         }
