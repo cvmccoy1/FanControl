@@ -77,12 +77,17 @@ class BaseNormalModeState : public BaseState
         void display(bool firstTime) override
         {
             int fanSpeedRPM = map(_fanSpeedPWM, 0, 255, 0, 100);
-            snprintf_P(_line[0], LCD_COLUMNS+1, PSTR("Fan Speed: %3d%% "), fanSpeedRPM);
+            char fanDisplay[5] = " Off";
+            if (fanSpeedRPM > 0)
+            {
+                snprintf_P(fanDisplay, sizeof(fanDisplay), PSTR("%3d%%"), fanSpeedRPM);
+            }
+            snprintf_P(_line[0], LCD_COLUMNS+1, PSTR("Fans:%4s %6s"), fanDisplay, _modeName);
             if (--_calcCounter <= 0)
             {
                 if (_displayState == temperature)
                 {
-                    snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("Temp:%3d\337 %6s"), _temperature, _modeName);
+                    snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("Temperature:%3d\337"), _temperature);
                     _displayState = rpms;
                 }
                 else if (_displayState == rpms)
