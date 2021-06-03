@@ -6,6 +6,7 @@
 #include <Encoder.h>
 #include <PCIManager.h>
 #include <PciListenerImp.h>
+#include "main.h"
 #include "storedData.h"
 #include "stateMgr.h"
 #include "manualAutomaticModeState.h"
@@ -19,7 +20,7 @@ OneWire oneWire(TEMPERTURE_SENSOR_PIN);
 // Pass the oneWire reference to a DallasTemperature component. 
 DallasTemperature sensors(&oneWire);
 
-// Set the LCD address to 0x27 and cofigure for a 16 chars and 4 line display
+// Set the LCD address to 0x27 and cofigure for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x27, 16, 2); 
 
 // Set up the Roto Encoder
@@ -38,8 +39,11 @@ StoredDataManager storedDataManager{};
 // Set up the State Manager
 StateManager stateManager{};
 
-// Set up loop to only do work every 1 second
+// Do activity only every 1000 milliseconds (1 second)
+const unsigned long WORK_TIME = 1000;   
 unsigned long lastTime;
+
+volatile bool isTriggered = false;
 
 /*********************************************************/
 void setup()
@@ -60,31 +64,35 @@ void setup()
 
   stateManager.init(&lcd, &rotoEncoder, &storedDataManager, &sensors);
 
-  lastTime = millis() - 1000;
+  lastTime = millis() - WORK_TIME;
 }
 /*********************************************************/
 void loop() 
 {
   long currentTime = millis();
-  if ((currentTime - lastTime) > 1000)
+  if ((currentTime - lastTime) > WORK_TIME || isTriggered)
   {
     stateManager.Activity();
     lastTime = currentTime;
+    noInterrupts();
+    isTriggered = false;
+    interrupts();
   }
 }
 /************************************************************/
 
 void OnSwitchPinChange(byte pin, byte pinState)
 {
-  Serial.print(F("Encoder Switch: Pin "));
-  Serial.print(pin);
-  Serial.print(F(" State: "));
-  Serial.println(pinState);
+  //Serial.print(F("Encoder Switch: Pin "));
+  //Serial.print(pin);
+  //Serial.print(F(" State: "));
+  //Serial.println(pinState);
   bool currentEncoderSwitchState = (pinState == 0);
   if (!currentEncoderSwitchState)
   {
     noInterrupts();
     stateManager.Trigger();
+    isTriggered = true;
     interrupts();
   }
 }

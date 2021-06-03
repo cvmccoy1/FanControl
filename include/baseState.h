@@ -12,10 +12,12 @@ enum State { manualMode, automaticMode, modeSetup, onTempSetup, offTempSetup, te
 class BaseState
 {
     private:
+        bool _firstTime;
         int32_t _encoderMinValue;
         int32_t _encoderMaxValue;
         static char _line_copy[LCD_ROWS][LCD_COLUMNS];
         void updateDisplay(int row);
+        void clearDisplay();
     protected:
         LiquidCrystal_I2C *_lcd;
         StoredDataManager *_storedDataManager;
@@ -23,8 +25,8 @@ class BaseState
         State _state;
         int32_t _encoderValue;
         static char _line[LCD_ROWS][LCD_COLUMNS+1];
-        virtual void display();
-        virtual void updateValues();
+        virtual void display(bool firstTime);
+        virtual void updateValues(bool firstTime);
         virtual void retrieveState();
         virtual void saveState();
         virtual void restoreState();

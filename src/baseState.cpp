@@ -4,7 +4,7 @@
 char BaseState::_line[LCD_ROWS][LCD_COLUMNS+1];
 char BaseState::_line_copy[LCD_ROWS][LCD_COLUMNS];
 
-void BaseState::display()
+void BaseState::display(bool firstTime)
 {
     for (int row = 0; row < LCD_ROWS; row++)
     {
@@ -26,7 +26,7 @@ void BaseState::updateDisplay(int row)
     }
 }
 
-void BaseState::updateValues()
+void BaseState::updateValues(bool firstTime)
 {
     noInterrupts();
     int32_t movement = (_encoder->read() / 2);
@@ -41,6 +41,20 @@ void BaseState::updateValues()
             _encoderValue = _encoderMinValue;
     }
 }
+
+void BaseState::clearDisplay()
+{
+    for (int row = 0; row < LCD_ROWS; row++)
+    {
+        for (int column = 0; column < LCD_COLUMNS; column++)
+        {
+            _line[row][column] = ' ';
+            _line_copy[row][column] = ' ';
+        }
+    }
+    _lcd->clear();
+}
+
 void BaseState::retrieveState() { }
 void BaseState::restoreState()  { }
 void BaseState::saveState()     { }
@@ -58,6 +72,7 @@ void BaseState::OnEntry()
 {
     Serial.print(F("Entering State "));
     Serial.println(_state);
+    _firstTime = true;
     restoreState();
     noInterrupts();
     _encoder->write(0);
@@ -74,6 +89,7 @@ void BaseState::Activity()
 {
     Serial.print(F("Activity for State "));
     Serial.println(_state);
-    updateValues();
-    display();
+    updateValues(_firstTime);
+    display(_firstTime);
+    _firstTime = false;
 }
