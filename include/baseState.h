@@ -21,7 +21,6 @@ class BaseState
     protected:
         LiquidCrystal_I2C *_lcd;
         StoredDataManager *_storedDataManager;
-        Encoder *_encoder;
         State _state;
         int32_t _encoderValue;
         static char _line[LCD_ROWS][LCD_COLUMNS+1];
@@ -32,7 +31,7 @@ class BaseState
         virtual void restoreState();
 
     public:
-        BaseState(State state, LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, int32_t encoderMinValue, int32_t encoderMaxValue);
+        BaseState(State state, LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager, int32_t encoderMinValue, int32_t encoderMaxValue);
         void OnEntry();
         void OnExit();
         void Activity();

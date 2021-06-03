@@ -26,8 +26,8 @@ class AutomaticModeState : public BaseNormalModeState
         double desiredTemperature;
         
     public:
-        AutomaticModeState(LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, DallasTemperature *sensors) :
-            BaseNormalModeState(automaticMode, lcd, encoder, storedDataManager, sensors)
+        AutomaticModeState(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) :
+            BaseNormalModeState(automaticMode, lcd, storedDataManager)
         {
             _modeName = "Auto";
             desiredTemperature = _storedDataManager->getDesiredTemperature();

@@ -1,4 +1,10 @@
 #include "baseState.h"
+#include <Encoder.h>
+
+// Set up the Roto Encoder
+#define ROTO_ENCODER_CLK_PIN 2
+#define ROTO_ENCODER_DT_PIN 3
+Encoder rotoEncoder(ROTO_ENCODER_CLK_PIN, ROTO_ENCODER_DT_PIN);
 
 // Static variable definitions
 char BaseState::_line[LCD_ROWS][LCD_COLUMNS+1];
@@ -29,8 +35,8 @@ void BaseState::updateDisplay(int row)
 void BaseState::updateValues(bool firstTime)
 {
     noInterrupts();
-    int32_t movement = (_encoder->read() / 2);
-    _encoder->write(0);
+    int32_t movement = (rotoEncoder.read() / 2);
+    rotoEncoder.write(0);
     interrupts();
     if (movement != 0)
     {
@@ -59,11 +65,10 @@ void BaseState::retrieveState() { }
 void BaseState::restoreState()  { }
 void BaseState::saveState()     { }
 
-BaseState::BaseState(State state, LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, int32_t encoderMinValue, int32_t encoderMaxValue)
+BaseState::BaseState(State state, LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager, int32_t encoderMinValue, int32_t encoderMaxValue)
 {
     _state = state;
     _lcd = lcd;
-    _encoder = encoder;
     _storedDataManager = storedDataManager;
     _encoderMinValue = encoderMinValue;
     _encoderMaxValue = encoderMaxValue;
@@ -75,7 +80,7 @@ void BaseState::OnEntry()
     _firstTime = true;
     restoreState();
     noInterrupts();
-    _encoder->write(0);
+    rotoEncoder.write(0);
     interrupts();
     //display();
 }

@@ -1,4 +1,9 @@
 #include "baseNormalModeState.h"
+#include <OneWire.h> 
+#include <DallasTemperature.h>
+
+// Set up the Cooling Fan PWM
+#define FAN_PWM_PIN 6
 
 // Set up the Cooling Fan's Tachometer
 #define BASE_FAN_TACH_PIN 8
@@ -10,17 +15,27 @@
 // every so often.
 #define UPDATE_INTERVAL 2000  // in milliseconds
 
+
+// Set up the Temperture Sensor
+#define TEMPERTURE_SENSOR_PIN 7
+// Set up a oneWire instance to communicate with any OneWire devices  
+// (not just Maxim/Dallas temperature ICs) 
+OneWire oneWire(TEMPERTURE_SENSOR_PIN); 
+// Pass the oneWire reference to a DallasTemperature component. 
+DallasTemperature sensors(&oneWire);
+
 // Static variable definitions
 int BaseNormalModeState::_tachCounter[NUMBER_OF_FANS];
 
 // Public constructor
-BaseNormalModeState::BaseNormalModeState(State state, LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, DallasTemperature *sensors) : 
-    BaseState(state, lcd, encoder, storedDataManager, 0, 255)
+BaseNormalModeState::BaseNormalModeState(State state, LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) : 
+    BaseState(state, lcd, storedDataManager, 0, 255)
 {
-    _sensors = sensors;
-    _calcInterval = UPDATE_INTERVAL / WORK_TIME;
+    _calcInterval = UPDATE_INTERVAL / ACTIVITY_INTERVAL;
     _calcCounter = _calcInterval;
     _displayState = temperature;
+    pinMode(FAN_PWM_PIN, OUTPUT);
+    sensors.begin();   //initialize the temperture sensor
 }
  
 // Private members
@@ -36,7 +51,7 @@ unsigned long BaseNormalModeState::calcRPM(byte index)
 
 void BaseNormalModeState::OnFanTachPinChange(byte fanPin, byte pinState)
 {
-    // There are two pulses per revolution, resulting in 4 interrupts per pulse...one on each 
+    // There are two pulses per revolution, resulting in 4 interrupts per revolution...one on each 
     // raising and trailing edge. We are only going to count the raising edge transitions.
     if (pinState != 0)
     {
@@ -49,8 +64,8 @@ void BaseNormalModeState::OnFanTachPinChange(byte fanPin, byte pinState)
 
 void BaseNormalModeState::GetCurrentTemperature()
 {
-    _sensors->requestTemperatures(); 
-    _temperature = (int)_sensors->getTempFByIndex(0);
+    sensors.requestTemperatures(); 
+    _temperature = (int)sensors.getTempFByIndex(0);
 }
 
 void BaseNormalModeState::GetFanSpeedPWM()

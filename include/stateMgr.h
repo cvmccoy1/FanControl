@@ -10,10 +10,10 @@ class StateManager
         BaseState *_statesObjects[numberOfStates];
     public:
         StateManager() {}
-        void init(LiquidCrystal_I2C *lcd, Encoder *encoder, StoredDataManager *storedDataManager, DallasTemperature *sensors)
+        void init(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager)
         {
-            _statesObjects[manualMode]    = (BaseState *)(new ManualModeState(lcd, encoder, storedDataManager, sensors));
-            _statesObjects[automaticMode] = (BaseState *)(new AutomaticModeState(lcd, encoder, storedDataManager, sensors));
+            _statesObjects[manualMode]    = (BaseState *)(new ManualModeState(lcd, storedDataManager));
+            _statesObjects[automaticMode] = (BaseState *)(new AutomaticModeState(lcd, storedDataManager));
             _currentState = manualMode;
             _statesObjects[_currentState]->OnEntry();
         };
