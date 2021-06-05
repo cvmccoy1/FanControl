@@ -2,9 +2,21 @@
 
 #define EEPROM_ADDRESS 0
 
-#define DESIRED_TEMP_MIN 70
-#define DESIRED_TEMP_MAX 120
+#define DESIRED_TEMP_MIN     70
+#define DESIRED_TEMP_MAX     120
 #define DESIRED_TEMP_DEFAULT 88
+
+#define PID_PROPORTIONAL_MAX       20
+#define PID_PROPORTIONAL_MIN       0
+#define PID_PROPORTIONAL_DEFAULT   4
+
+#define PID_INTEGRAL_MAX           50
+#define PID_INTEGRAL_MIN           0
+#define PID_INTEGRAL_DEFAULT       10
+
+#define PID_DERIVATIVE_MAX         10
+#define PID_DERIVATIVE_MIN         0
+#define PID_DERIVATIVE_DEFAULT     2
 
 enum OperationMode { manual, automatic };
 
@@ -14,6 +26,9 @@ struct StoredData
     int  manualModeFanSpeed;
     int  desiredTemperature;
     bool isRpmsDisplayed;
+    int  pidProportional;
+    int  pidIntegral;
+    int  pidDerivative;
 };
 
 class StoredDataManager 
@@ -31,9 +46,15 @@ public:
     int getManualModeFanSpeed();
     int getDesiredTemperature();
     bool getIsRpmsDisplayed();
+    int getPidProportional();
+    int getPidIntegral();
+    int getPidDerivative();
 
     void setMode(OperationMode mode);
     void setManualModeFanSpeed(int fanSpeed);
     void setDesiredTemperature(int temp);
     void setIsRpmsDisplayed(bool isDisplayed);
+    void setPidProportional(int kp);
+    void setPidIntegral(int ki);
+    void setPidDerivative(int kd);
 };

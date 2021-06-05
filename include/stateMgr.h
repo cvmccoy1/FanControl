@@ -5,6 +5,9 @@
 #include "modeSetupState.h"
 #include "desiredTempSetupState.h"
 #include "displayedSetupState.h"
+#include "pidProportionalSetupState.h"
+#include "pidIntegralSetupState.h"
+#include "pidDerivativeSetupState.h"
 
 class StateManager
 {
@@ -12,16 +15,25 @@ class StateManager
         State _currentState;
         BaseState *_statesObjects[numberOfStates];
         StoredDataManager *_storedDataManager;
+
+        void lastState()
+        {
+            _storedDataManager->save();  // Last of the Setup states, so save the data to EEPROM
+            _currentState = (_storedDataManager->getMode() == automatic) ? automaticMode : manualMode;            
+        }
     public:
         StateManager() {}
         void init(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager)
         {
             _storedDataManager = storedDataManager;
-            _statesObjects[manualMode]       = (BaseState *)(new ManualModeState(lcd, storedDataManager));
-            _statesObjects[automaticMode]    = (BaseState *)(new AutomaticModeState(lcd, storedDataManager));
-            _statesObjects[modeSetup]        = (BaseState *)(new ModeSetupState(lcd, storedDataManager));
-            _statesObjects[desiredTempSetup] = (BaseState *)(new DesiredTempSetupState(lcd, storedDataManager));
-            _statesObjects[displayedSetup]   = (BaseState *)(new DisplayedSetupState(lcd, storedDataManager));
+            _statesObjects[manualMode]           = (BaseState *)(new ManualModeState(lcd, storedDataManager));
+            _statesObjects[automaticMode]        = (BaseState *)(new AutomaticModeState(lcd, storedDataManager));
+            _statesObjects[modeSetup]            = (BaseState *)(new ModeSetupState(lcd, storedDataManager));
+            _statesObjects[desiredTempSetup]     = (BaseState *)(new DesiredTempSetupState(lcd, storedDataManager));
+            _statesObjects[displayedSetup]       = (BaseState *)(new DisplayedSetupState(lcd, storedDataManager));
+            _statesObjects[pidProportionalSetup] = (BaseState *)(new PidProportionSetupState(lcd, storedDataManager));
+            _statesObjects[pidIntegralSetup]     = (BaseState *)(new PidIntegralSetupState(lcd, storedDataManager));
+            _statesObjects[pidDerivativeSetup]   = (BaseState *)(new PidDerivativeSetupState(lcd, storedDataManager));
             _currentState = (_storedDataManager->getMode() == automatic) ? automaticMode : manualMode;
             _statesObjects[_currentState]->OnEntry();
         };
@@ -44,8 +56,23 @@ class StateManager
                     _currentState = displayedSetup;
                     break;
                 case displayedSetup:
-                    _storedDataManager->save();  // Last of the Setup states, so save the data to EEPROM
-                    _currentState = (_storedDataManager->getMode() == automatic) ? automaticMode : manualMode;
+                    if (_storedDataManager->getMode() == automatic)
+                    {
+                        _currentState = pidProportionalSetup;
+                    }
+                    else
+                    {
+                        lastState();
+                    }
+                    break;
+                case pidProportionalSetup:
+                    _currentState = pidIntegralSetup;
+                    break;
+                case pidIntegralSetup:
+                    _currentState = pidDerivativeSetup;
+                    break;
+                case pidDerivativeSetup:
+                    lastState();
                     break;
                 default:
                     break;

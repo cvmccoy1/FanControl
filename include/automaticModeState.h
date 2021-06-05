@@ -10,8 +10,7 @@ class AutomaticModeState : public BaseNormalModeState
 
         //PID parameters. Using defaults.
         double kp=4; //2;   //proportional parameter
-        double ki=10; //5;  
-        //integral parameter
+        double ki=10; //5;  //integral parameter
         double kd=2; //1;   //derivative parameter
 
         // Input: the current temperature
@@ -29,6 +28,9 @@ class AutomaticModeState : public BaseNormalModeState
         void enter() override
         {
             desiredTemperature = _storedDataManager->getDesiredTemperature();
+            kp = _storedDataManager->getPidProportional();
+            ki = _storedDataManager->getPidIntegral();
+            kd = _storedDataManager->getPidDerivative();
             //init PID
             if (_myPID != nullptr)
             {
