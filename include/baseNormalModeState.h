@@ -17,24 +17,24 @@ class BaseNormalModeState : public BaseState
         int _calcInterval;
         int _calcCounter;
         DisplayState _displayState;
+        bool _isRpmsDisplayed;
 
         unsigned long calcRPM(byte index);
         static void OnFanTachPinChange(byte fanPin, byte pinState);
         void GetCurrentTemperature();
-        virtual void GetFanSpeedPWM();
+       
 
     protected:
         int _temperature;
         int _fanSpeedPWM;
         const char* _modeName;
-
+        virtual void GetFanSpeedPWM() = 0;
     public:
         BaseNormalModeState(State state, LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager);
 
     protected:
-        void display(bool firstTime) override;
-        void updateValues(bool firstTime) override;
-        void retrieveState() override;
-        void saveState() override;
-        void restoreState() override;
+        void display() override;
+        void updateValues() override;
+        void enter() override;
+        void leave() override;
 };

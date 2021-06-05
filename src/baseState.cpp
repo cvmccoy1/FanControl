@@ -1,5 +1,5 @@
-#include "baseState.h"
 #include <Encoder.h>
+#include "baseState.h"
 
 // Set up the Roto Encoder
 #define ROTO_ENCODER_CLK_PIN 2
@@ -10,7 +10,7 @@ Encoder rotoEncoder(ROTO_ENCODER_CLK_PIN, ROTO_ENCODER_DT_PIN);
 char BaseState::_line[LCD_ROWS][LCD_COLUMNS+1];
 char BaseState::_line_copy[LCD_ROWS][LCD_COLUMNS];
 
-void BaseState::display(bool firstTime)
+void BaseState::display()
 {
     for (int row = 0; row < LCD_ROWS; row++)
     {
@@ -32,10 +32,10 @@ void BaseState::updateDisplay(int row)
     }
 }
 
-void BaseState::updateValues(bool firstTime)
+void BaseState::updateValues()
 {
     noInterrupts();
-    int32_t movement = (rotoEncoder.read() / 2);
+    int32_t movement = (rotoEncoder.read() / _encoderAdjustment);
     rotoEncoder.write(0);
     interrupts();
     if (movement != 0)
@@ -61,9 +61,8 @@ void BaseState::clearDisplay()
     _lcd->clear();
 }
 
-void BaseState::retrieveState() { }
-void BaseState::restoreState()  { }
-void BaseState::saveState()     { }
+void BaseState::enter()  { _encoderAdjustment = 4; }
+void BaseState::leave()  { }
 
 BaseState::BaseState(State state, LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager, int32_t encoderMinValue, int32_t encoderMaxValue)
 {
@@ -75,26 +74,17 @@ BaseState::BaseState(State state, LiquidCrystal_I2C *lcd, StoredDataManager *sto
 }
 void BaseState::OnEntry()
 {
-    Serial.print(F("Entering State "));
-    Serial.println(_state);
-    _firstTime = true;
-    restoreState();
+    enter();
     noInterrupts();
     rotoEncoder.write(0);
     interrupts();
-    //display();
 }
 void BaseState::OnExit()
 {
-    Serial.print(F("Exiting State "));
-    Serial.println(_state);
-    saveState();
+    leave();
 }
 void BaseState::Activity()
 {
-    Serial.print(F("Activity for State "));
-    Serial.println(_state);
-    updateValues(_firstTime);
-    display(_firstTime);
-    _firstTime = false;
+    updateValues();
+    display();
 }

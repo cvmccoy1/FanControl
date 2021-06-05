@@ -1,6 +1,6 @@
-#include "baseNormalModeState.h"
 #include <OneWire.h> 
 #include <DallasTemperature.h>
+#include "baseNormalModeState.h"
 
 // Set up the Cooling Fan PWM
 #define FAN_PWM_PIN 6
@@ -68,13 +68,8 @@ void BaseNormalModeState::GetCurrentTemperature()
     _temperature = (int)sensors.getTempFByIndex(0);
 }
 
-void BaseNormalModeState::GetFanSpeedPWM()
-{
-    _fanSpeedPWM = _encoderValue;
-}
-
-// Protected members
-void BaseNormalModeState::display(bool firstTime)
+// Protected override members
+void BaseNormalModeState::display()
 {
     int fanSpeedRPM = map(_fanSpeedPWM, 0, 255, 0, 100);
     char fanDisplay[5] = " Off";
@@ -82,13 +77,14 @@ void BaseNormalModeState::display(bool firstTime)
     {
         snprintf_P(fanDisplay, sizeof(fanDisplay), PSTR("%3d%%"), fanSpeedRPM);
     }
-    snprintf_P(_line[0], LCD_COLUMNS+1, PSTR("Fans:%4s %6s"), fanDisplay, _modeName);
+    snprintf_P(_line[0], LCD_COLUMNS+1, PSTR("%6s Fans:%4s"), _modeName, fanDisplay);
     if (--_calcCounter <= 0)
     {
         if (_displayState == temperature)
         {
             snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("Temperature:%3d\337"), _temperature);
-            _displayState = rpms;
+            if (_isRpmsDisplayed)
+                _displayState = rpms;
         }
         else if (_displayState == rpms)
         {
@@ -102,46 +98,45 @@ void BaseNormalModeState::display(bool firstTime)
         }
         _calcCounter = _calcInterval;
     }
-    BaseState::display(firstTime);
+    BaseState::display();
 } 
 
-void BaseNormalModeState::updateValues(bool firstTime)
+void BaseNormalModeState::updateValues()
 {
-    BaseState::updateValues(firstTime);
-    if (firstTime == true)
-    {
-        _displayState = temperature;
-        _calcCounter = 1;
-    }
+    BaseState::updateValues();
     GetCurrentTemperature();
     GetFanSpeedPWM();
     analogWrite(FAN_PWM_PIN, _fanSpeedPWM);
 }
 
-void BaseNormalModeState::retrieveState()
+void BaseNormalModeState::enter()
 {
-
+    BaseState::enter();
+    _isRpmsDisplayed = _storedDataManager->getIsRpmsDisplayed();
+    _displayState = temperature;
+    _calcCounter = 1;
+    if (_isRpmsDisplayed)
+    {
+        for (int fanNumber = 0; fanNumber < NUMBER_OF_FANS; fanNumber++)
+        {
+            byte fanTachPin = BASE_FAN_TACH_PIN + fanNumber;
+            PciListenerImp* listener = new PciListenerImp(fanTachPin, OnFanTachPinChange, true);
+            PciManager.registerListener(listener);
+            _listener[fanNumber] = listener;
+            _tachCounter[fanNumber] = 0;
+        }
+    }
 }
 
-void BaseNormalModeState::saveState()
+void BaseNormalModeState::leave()
 {
-    for (int fanNumber = 0; fanNumber < NUMBER_OF_FANS; fanNumber++)
+    BaseState::leave();
+    if (_isRpmsDisplayed)
     {
-        PciListenerImp* listener = _listener[fanNumber];
-        PciManager.removeListener(listener);
+        for (int fanNumber = 0; fanNumber < NUMBER_OF_FANS; fanNumber++)
+        {
+            PciListenerImp* listener = _listener[fanNumber];
+            PciManager.removeListener(listener);
+        }
     }
-    BaseState::saveState();
-}
-
-void BaseNormalModeState::restoreState()
-{
-    for (int fanNumber = 0; fanNumber < NUMBER_OF_FANS; fanNumber++)
-    {
-        byte fanTachPin = BASE_FAN_TACH_PIN + fanNumber;
-        PciListenerImp* listener = new PciListenerImp(fanTachPin, OnFanTachPinChange, true);
-        PciManager.registerListener(listener);
-        _listener[fanNumber] = listener;
-        _tachCounter[fanNumber] = 0;
-    }
-    BaseState::restoreState();
 }

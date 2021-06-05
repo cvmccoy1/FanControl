@@ -10,19 +10,28 @@ class ManualModeState : public BaseNormalModeState
         {
             _modeName = "Manual";
         }
+
     protected:
-        void saveState() override
+        void enter() override
         {
-            if (_storedDataManager->getManualModeFanSpeed() != _encoderValue)
-            {
-                _storedDataManager->setManualModeFanSpeed(_encoderValue);
-                _storedDataManager->save();
-            }
-            BaseNormalModeState::saveState();
-        }
-        void restoreState() override
-        {
+            BaseNormalModeState::enter();
             _encoderValue = _storedDataManager->getManualModeFanSpeed();
-            BaseNormalModeState::restoreState();
+            _encoderAdjustment = 2;
+        }
+        void leave() override
+        {
+            BaseNormalModeState::leave();
+            _storedDataManager->setManualModeFanSpeed(_encoderValue);
+        }
+        void GetFanSpeedPWM() override
+        {
+            if (_temperature >= _storedDataManager->getDesiredTemperature())
+            {
+                _fanSpeedPWM = _encoderValue;
+            }
+            else
+            {
+                _fanSpeedPWM = 0;
+            }
         }
 };

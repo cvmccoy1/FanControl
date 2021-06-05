@@ -20,6 +20,7 @@ class StoredDataManager
 {
 private:
     StoredData _storedData;
+    bool _isDirty = false;
     
     void validateStoredData();
 public:

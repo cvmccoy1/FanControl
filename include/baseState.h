@@ -7,12 +7,11 @@
 #define LCD_ROWS    2
 #define LCD_COLUMNS 16
 
-enum State { manualMode, automaticMode, modeSetup, desiredTempSetup, displayedSetup, exitSetup, numberOfStates };
+enum State { manualMode, automaticMode, modeSetup, desiredTempSetup, displayedSetup, numberOfStates };
 
 class BaseState
 {
     private:
-        bool _firstTime;
         int32_t _encoderMinValue;
         int32_t _encoderMaxValue;
         static char _line_copy[LCD_ROWS][LCD_COLUMNS];
@@ -23,12 +22,12 @@ class BaseState
         StoredDataManager *_storedDataManager;
         State _state;
         int32_t _encoderValue;
+        int32_t _encoderAdjustment;
         static char _line[LCD_ROWS][LCD_COLUMNS+1];
-        virtual void display(bool firstTime);
-        virtual void updateValues(bool firstTime);
-        virtual void retrieveState();
-        virtual void saveState();
-        virtual void restoreState();
+        virtual void display();
+        virtual void updateValues();
+        virtual void enter();
+        virtual void leave();
 
     public:
         BaseState(State state, LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager, int32_t encoderMinValue, int32_t encoderMaxValue);

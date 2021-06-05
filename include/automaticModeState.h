@@ -24,29 +24,47 @@ class AutomaticModeState : public BaseNormalModeState
 
         //Setpoint: the desired temperture;
         double desiredTemperature;
-        
-    public:
-        AutomaticModeState(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) :
-            BaseNormalModeState(automaticMode, lcd, storedDataManager)
+
+    protected:
+        void enter() override
         {
-            _modeName = "Auto";
             desiredTemperature = _storedDataManager->getDesiredTemperature();
             //init PID
+            if (_myPID != nullptr)
+            {
+                delete _myPID;
+            }
             _myPID = new PID(&currentTemperature, &command, &desiredTemperature, kp, ki, kd, REVERSE);
             //turn the PID on
             _myPID->SetMode(AUTOMATIC);
             _myPID->SetOutputLimits(commandMin, commandMax);
-        }
-        ~AutomaticModeState()
+        }      
+        void leave() override
         {
             if (_myPID != nullptr)
+            {
                 delete _myPID;
-        }
-
+            }
+        }    
         void GetFanSpeedPWM() override
         {
             currentTemperature = _temperature;
             _myPID->Compute();
             _fanSpeedPWM = command;
         }
+        
+    public:
+        AutomaticModeState(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) :
+            BaseNormalModeState(automaticMode, lcd, storedDataManager)
+        {
+            _modeName = "Auto";
+        }
+        ~AutomaticModeState()
+        {
+            if (_myPID != nullptr)
+            {
+                delete _myPID;
+            }
+        }
+
 };
