@@ -9,6 +9,7 @@ class ManualModeState : public BaseNormalModeState
             BaseNormalModeState(manualMode, lcd, storedDataManager)
         {
             _modeName = "Manual";
+            
         }
 
     protected:
