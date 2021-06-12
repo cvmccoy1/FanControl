@@ -31,7 +31,7 @@ int BaseNormalModeState::_tachCounter[NUMBER_OF_FANS];
 BaseNormalModeState::BaseNormalModeState(State state, LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) : 
     BaseState(state, lcd, storedDataManager, 0, 255)
 {
-    _calcInterval = UPDATE_INTERVAL / ACTIVITY_INTERVAL;
+    _calcInterval = UPDATE_INTERVAL / gActivityInterval;
     _calcCounter = _calcInterval;
     _displayState = temperature;
     pinMode(FAN_PWM_PIN, OUTPUT);
@@ -84,9 +84,11 @@ void BaseNormalModeState::display()
         {
             snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("Temperature:%3d\337"), _temperature);
             if (_isRpmsDisplayed)
+            {
                 _displayState = rpms;
+            }
         }
-        else if (_displayState == rpms)
+        else
         {
             int rpm1 = calcRPM(0);
             int rpm2 = calcRPM(1);

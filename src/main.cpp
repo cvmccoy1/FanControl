@@ -12,8 +12,10 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Set up the Roto Encoder's Push Button Switch
 #define MODE_TOGGLE_SWITCH_PIN 4
+#define DEBOUCE_INTERVAL 50  // In milliseconds
 void OnSwitchPinChange(byte pin, byte pinState);
-PciListenerImp switchListener(MODE_TOGGLE_SWITCH_PIN, OnSwitchPinChange);
+unsigned long fallingEdgeTime = 0;  // Used for debouncing the encoder switch button
+PciListenerImp switchListener(MODE_TOGGLE_SWITCH_PIN, OnSwitchPinChange, true);
 
 // Set up the Stored Data Manager (EEPROM Settings)
 StoredDataManager storedDataManager{};
@@ -21,8 +23,7 @@ StoredDataManager storedDataManager{};
 // Set up the State Manager
 StateManager stateManager{};
 
-// Do activity only every 1000 milliseconds (1 second)
-const unsigned long ACTIVITY_INTERVAL = 1000;   
+unsigned long gActivityInterval;   
 unsigned long lastTime;
 
 volatile bool isTriggered = false;
@@ -39,17 +40,18 @@ void setup()
   PciManager.registerListener(&switchListener);
 
   storedDataManager.init();
-  
+
   stateManager.init(&lcd, &storedDataManager);
 
-  lastTime = millis() - ACTIVITY_INTERVAL;
+  lastTime = millis() - gActivityInterval;
 }
 
 /*********************************************************/
 void loop() 
 {
+  gActivityInterval = storedDataManager.getIsRpmsDisplayed() ? 1000 : 200;
   long currentTime = millis();
-  if ((currentTime - lastTime) > ACTIVITY_INTERVAL || isTriggered)
+  if ((currentTime - lastTime) > gActivityInterval || isTriggered)
   {
     stateManager.Activity();
     lastTime = currentTime;
@@ -59,15 +61,30 @@ void loop()
   }
 }
 
+
 /************************************************************/
 void OnSwitchPinChange(byte pin, byte pinState)
 {
   bool currentEncoderSwitchState = (pinState == 0);
-  if (!currentEncoderSwitchState)
+  if (currentEncoderSwitchState)
   {
     noInterrupts();
-    stateManager.Trigger();
-    isTriggered = true;
+    fallingEdgeTime = millis();
+    interrupts();
+  }
+  else
+  {
+    noInterrupts();
+    if (fallingEdgeTime != 0)
+    {
+      unsigned long timeSinceFallingEdge = millis() - fallingEdgeTime;
+      if (timeSinceFallingEdge >= DEBOUCE_INTERVAL)
+      {
+        stateManager.Trigger();
+        isTriggered = true;
+      }
+      fallingEdgeTime = 0;
+    }
     interrupts();
   }
 }

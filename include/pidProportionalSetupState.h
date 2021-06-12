@@ -13,13 +13,16 @@ class PidProportionSetupState : public BaseSetupModeState
     protected:
         void display() override
         {
-            snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("   PID kp: %2d   "), _encoderValue);
+            int x = _encoderValue / 10;
+            int y = _encoderValue % 10;
+            snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("  PID kp: %2d.%1d  "), x, y);
             BaseSetupModeState::display();
         }
         void enter() override
         {
             BaseSetupModeState::enter();
             _encoderValue = _storedDataManager->getPidProportional();
+            _encoderAdjustment = 2;
         }
         void leave() override
         {
