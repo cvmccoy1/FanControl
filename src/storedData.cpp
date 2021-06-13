@@ -100,13 +100,9 @@ void StoredDataManager::validateStoredData()
     {
         _storedData.desiredTemperature = DESIRED_TEMP_DEFAULT;
     }
-    if (_storedData.manualModeFanSpeed < 0 || _storedData.manualModeFanSpeed > 100)
+    if (_storedData.manualModeFanSpeed < 0 || _storedData.manualModeFanSpeed > 255)
     {
-        _storedData.manualModeFanSpeed = 50;
-    }
-    if (_storedData.manualModeFanSpeed < 0 || _storedData.manualModeFanSpeed > 100)
-    {
-        _storedData.manualModeFanSpeed = 50;
+        _storedData.manualModeFanSpeed = 255;
     }
     if (_storedData.pidProportional < PID_PROPORTIONAL_MIN || _storedData.pidProportional > PID_PROPORTIONAL_MAX)
     {
