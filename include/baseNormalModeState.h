@@ -1,7 +1,7 @@
 #pragma once
 
 #include <PCIManager.h>
-#include <PciListenerImp.h>
+#include <MyPciListenerImp.h>
 #include "main.h"
 #include "baseState.h"
 
@@ -13,7 +13,7 @@ class BaseNormalModeState : public BaseState
 {
     private:
         static int _tachCounter[NUMBER_OF_FANS];
-        PciListenerImp* _listener[NUMBER_OF_FANS];
+        MyPciListenerImp* _listener[NUMBER_OF_FANS];
         int _calcInterval;
         int _calcCounter;
         DisplayState _displayState;

@@ -122,7 +122,7 @@ void BaseNormalModeState::enter()
         for (int fanNumber = 0; fanNumber < NUMBER_OF_FANS; fanNumber++)
         {
             byte fanTachPin = BASE_FAN_TACH_PIN + fanNumber;
-            PciListenerImp* listener = new PciListenerImp(fanTachPin, OnFanTachPinChange, true);
+            MyPciListenerImp* listener = new MyPciListenerImp(fanTachPin, OnFanTachPinChange, true);
             PciManager.registerListener(listener);
             _listener[fanNumber] = listener;
             _tachCounter[fanNumber] = 0;
@@ -137,7 +137,7 @@ void BaseNormalModeState::leave()
     {
         for (int fanNumber = 0; fanNumber < NUMBER_OF_FANS; fanNumber++)
         {
-            PciListenerImp* listener = _listener[fanNumber];
+            MyPciListenerImp* listener = _listener[fanNumber];
             PciManager.removeListener(listener);
         }
     }

@@ -2,7 +2,7 @@
 #include <WString.h>
 #include <LiquidCrystal_I2C.h>
 #include <PCIManager.h>
-#include <PciListenerImp.h>
+#include "myPciListenerImp.h"
 #include "main.h"
 #include "storedData.h"
 #include "stateMgr.h"
@@ -15,7 +15,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 #define DEBOUCE_INTERVAL 50  // In milliseconds
 void OnSwitchPinChange(byte pin, byte pinState);
 unsigned long fallingEdgeTime = 0;  // Used for debouncing the encoder switch button
-PciListenerImp switchListener(MODE_TOGGLE_SWITCH_PIN, OnSwitchPinChange, true);
+MyPciListenerImp switchListener(MODE_TOGGLE_SWITCH_PIN, OnSwitchPinChange, true);
 
 // The Stored Data Manager (EEPROM Settings)
 StoredDataManager* storedDataManager;
@@ -23,9 +23,18 @@ StoredDataManager* storedDataManager;
 // The State Manager
 StateManager* stateManager;
 
-unsigned long gActivityInterval;   
+#define FAST_ACTIVITY_LOOP_INTERVAL  200
+#define SLOW_ACTIVITY_LOOP_INTERVAL  1000
+unsigned long gActivityInterval = FAST_ACTIVITY_LOOP_INTERVAL;   
 unsigned long lastTime;
-volatile bool isTriggered = false;
+volatile bool hasStateTriggered = false;
+
+bool inline HasActivityIntervalElapsed(long currentTime)
+{  
+  gActivityInterval = storedDataManager->getIsRpmsDisplayed() ? SLOW_ACTIVITY_LOOP_INTERVAL : FAST_ACTIVITY_LOOP_INTERVAL;
+  return ((currentTime - lastTime) > gActivityInterval);
+; 
+}
 
 /*********************************************************/
 void setup()
@@ -45,15 +54,14 @@ void setup()
 /*********************************************************/
 void loop() 
 {
-  gActivityInterval = storedDataManager->getIsRpmsDisplayed() ? 1000 : 200;
   long currentTime = millis();
-  if ((currentTime - lastTime) > gActivityInterval || isTriggered)
+  if (hasStateTriggered || HasActivityIntervalElapsed(currentTime))
   {
     stateManager->Activity();
-    lastTime = currentTime;
     noInterrupts();
-    isTriggered = false;
+    hasStateTriggered = false;
     interrupts();
+    lastTime = currentTime;
   }
 }
 
@@ -61,23 +69,28 @@ void loop()
 /************************************************************/
 void OnSwitchPinChange(byte pin, byte pinState)
 {
-  bool currentEncoderSwitchState = (pinState == 0);
-  if (currentEncoderSwitchState)
+  // Make sure the encoder switch has constantly been in the low state (button pressed) 
+  // for at least the DEBOUCE_INTERVAL. Otherwise, it is not considered a value button press.
+  bool isLowState = (pinState == CHANGEKIND_HIGH_TO_LOW);
+  if (isLowState)
   {
+    // Falling Edge Trigger...record the time of the falling edge
     noInterrupts();
     fallingEdgeTime = millis();
     interrupts();
   }
   else
   {
+    // Raisting Edge Trigger
     noInterrupts();
-    if (fallingEdgeTime != 0)
+    if (fallingEdgeTime != 0)  // Make sure we have already seen the falling edge
     {
       unsigned long timeSinceFallingEdge = millis() - fallingEdgeTime;
       if (timeSinceFallingEdge >= DEBOUCE_INTERVAL)
       {
+        // Encoder Switch was low for at least the DEBOUCE_INTERVAL...OK to trigger to next state
         stateManager->Trigger();
-        isTriggered = true;
+        hasStateTriggered = true;
       }
       fallingEdgeTime = 0;
     }
