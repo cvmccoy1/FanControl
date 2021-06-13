@@ -17,11 +17,11 @@ void OnSwitchPinChange(byte pin, byte pinState);
 unsigned long fallingEdgeTime = 0;  // Used for debouncing the encoder switch button
 PciListenerImp switchListener(MODE_TOGGLE_SWITCH_PIN, OnSwitchPinChange, true);
 
-// Set up the Stored Data Manager (EEPROM Settings)
-StoredDataManager storedDataManager{};
+// The Stored Data Manager (EEPROM Settings)
+StoredDataManager* storedDataManager;
 
-// Set up the State Manager
-StateManager stateManager(&lcd, &storedDataManager);
+// The State Manager
+StateManager* stateManager;
 
 unsigned long gActivityInterval;   
 unsigned long lastTime;
@@ -37,18 +37,19 @@ void setup()
   lcd.backlight();  //open the backlight
   
   PciManager.registerListener(&switchListener);
-
+  storedDataManager = new StoredDataManager();
+  stateManager = new StateManager(&lcd, storedDataManager);
   lastTime = millis() - gActivityInterval;
 }
 
 /*********************************************************/
 void loop() 
 {
-  gActivityInterval = storedDataManager.getIsRpmsDisplayed() ? 1000 : 200;
+  gActivityInterval = storedDataManager->getIsRpmsDisplayed() ? 1000 : 200;
   long currentTime = millis();
   if ((currentTime - lastTime) > gActivityInterval || isTriggered)
   {
-    stateManager.Activity();
+    stateManager->Activity();
     lastTime = currentTime;
     noInterrupts();
     isTriggered = false;
@@ -75,7 +76,7 @@ void OnSwitchPinChange(byte pin, byte pinState)
       unsigned long timeSinceFallingEdge = millis() - fallingEdgeTime;
       if (timeSinceFallingEdge >= DEBOUCE_INTERVAL)
       {
-        stateManager.Trigger();
+        stateManager->Trigger();
         isTriggered = true;
       }
       fallingEdgeTime = 0;

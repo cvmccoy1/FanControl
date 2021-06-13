@@ -4,16 +4,12 @@
 
 StoredDataManager::StoredDataManager()
 {
-};
-
-void StoredDataManager::init()
-{
     EEPROM.get(EEPROM_ADDRESS, _storedData);
     validateStoredData();
     _isDirty = false;
-}
+};
 
-void StoredDataManager::save()
+void StoredDataManager::Save()
 {
     if (_isDirty)
     {

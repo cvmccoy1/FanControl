@@ -18,12 +18,11 @@ class StateManager
 
         void lastState()
         {
-            _storedDataManager->save();  // Last of the Setup states, so save the data to EEPROM
+            _storedDataManager->Save();  // Last of the Setup states, so save the data to EEPROM
             _currentState = (_storedDataManager->getMode() == automatic) ? automaticMode : manualMode;            
         }
     public:
-        StateManager() {}
-        void init(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager)
+        StateManager(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager)
         {
             _storedDataManager = storedDataManager;
             _statesObjects[manualMode]           = (BaseState *)(new ManualModeState(lcd, storedDataManager));

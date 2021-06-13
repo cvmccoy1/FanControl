@@ -40,8 +40,7 @@ private:
     void validateStoredData();
 public:
     StoredDataManager();
-    void init();
-    void save();
+    void Save();
     OperationMode getMode();
     int getManualModeFanSpeed();
     int getDesiredTemperature();

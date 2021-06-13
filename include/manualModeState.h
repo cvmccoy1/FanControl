@@ -62,7 +62,7 @@ class ManualModeState : public BaseNormalModeState
                 if (HasFanSpeedStablized())
                 {
                     _storedDataManager->setManualModeFanSpeed(_encoderValue);
-                    _storedDataManager->save();          
+                    _storedDataManager->Save();          
                     _startTime = 0;
                     CheckFanSpeedOffCondition();
                 }
