@@ -21,27 +21,22 @@ PciListenerImp switchListener(MODE_TOGGLE_SWITCH_PIN, OnSwitchPinChange, true);
 StoredDataManager storedDataManager{};
 
 // Set up the State Manager
-StateManager stateManager{};
+StateManager stateManager(&lcd, &storedDataManager);
 
 unsigned long gActivityInterval;   
 unsigned long lastTime;
-
 volatile bool isTriggered = false;
 
 /*********************************************************/
 void setup()
 {
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   lcd.init();       //initialize the lcd
   lcd.clear();      //clear the lcd display
   lcd.backlight();  //open the backlight
   
   PciManager.registerListener(&switchListener);
-
-  storedDataManager.init();
-
-  stateManager.init(&lcd, &storedDataManager);
 
   lastTime = millis() - gActivityInterval;
 }
