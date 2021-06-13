@@ -2,9 +2,9 @@
 
 #include "manualModeState.h"
 #include "automaticModeState.h"
-#include "modeSetupState.h"
+#include "operationalModeSetupState.h"
 #include "desiredTempSetupState.h"
-#include "displayedSetupState.h"
+#include "displayRpmsSetupState.h"
 #include "pidProportionalSetupState.h"
 #include "pidIntegralSetupState.h"
 #include "pidDerivativeSetupState.h"
@@ -28,10 +28,10 @@ class StateManager
             _storedDataManager = storedDataManager;
             _statesObjects[manualMode]           = (BaseState *)(new ManualModeState(lcd, storedDataManager));
             _statesObjects[automaticMode]        = (BaseState *)(new AutomaticModeState(lcd, storedDataManager));
-            _statesObjects[modeSetup]            = (BaseState *)(new ModeSetupState(lcd, storedDataManager));
+            _statesObjects[modeSetup]            = (BaseState *)(new OperationModeSetupState(lcd, storedDataManager));
             _statesObjects[desiredTempSetup]     = (BaseState *)(new DesiredTempSetupState(lcd, storedDataManager));
-            _statesObjects[displayedSetup]       = (BaseState *)(new DisplayedSetupState(lcd, storedDataManager));
-            _statesObjects[pidProportionalSetup] = (BaseState *)(new PidProportionSetupState(lcd, storedDataManager));
+            _statesObjects[displayedSetup]       = (BaseState *)(new DisplayRpmsSetupState(lcd, storedDataManager));
+            _statesObjects[pidProportionalSetup] = (BaseState *)(new PidProportionalSetupState(lcd, storedDataManager));
             _statesObjects[pidIntegralSetup]     = (BaseState *)(new PidIntegralSetupState(lcd, storedDataManager));
             _statesObjects[pidDerivativeSetup]   = (BaseState *)(new PidDerivativeSetupState(lcd, storedDataManager));
             _currentState = (_storedDataManager->getMode() == automatic) ? automaticMode : manualMode;

@@ -2,10 +2,10 @@
 
 #include "baseSetupModeState.h"
 
-class DisplayedSetupState : public BaseSetupModeState
+class DisplayRpmsSetupState : public BaseSetupModeState
 {
     public:
-        DisplayedSetupState(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) :
+        DisplayRpmsSetupState(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) :
             BaseSetupModeState(modeSetup, lcd, storedDataManager, false, true)
         {
         }

@@ -2,10 +2,10 @@
 
 #include "baseSetupModeState.h"
 
-class ModeSetupState : public BaseSetupModeState
+class OperationModeSetupState : public BaseSetupModeState
 {
     public:
-        ModeSetupState(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) :
+        OperationModeSetupState(LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) :
             BaseSetupModeState(modeSetup, lcd, storedDataManager, manual, automatic)
         {
         }
