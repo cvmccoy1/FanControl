@@ -6,17 +6,17 @@
 #define DESIRED_TEMP_MAX     120
 #define DESIRED_TEMP_DEFAULT 88
 
-#define PID_PROPORTIONAL_MAX       200
-#define PID_PROPORTIONAL_MIN       10
-#define PID_PROPORTIONAL_DEFAULT   100
+#define PID_PROPORTIONAL_MAX       2000
+#define PID_PROPORTIONAL_MIN       100
+#define PID_PROPORTIONAL_DEFAULT   1000
 
-#define PID_INTEGRAL_MAX           200
+#define PID_INTEGRAL_MAX           2000
 #define PID_INTEGRAL_MIN           0
-#define PID_INTEGRAL_DEFAULT       10
+#define PID_INTEGRAL_DEFAULT       100
 
-#define PID_DERIVATIVE_MAX         100
+#define PID_DERIVATIVE_MAX         1000
 #define PID_DERIVATIVE_MIN         0
-#define PID_DERIVATIVE_DEFAULT     10
+#define PID_DERIVATIVE_DEFAULT     100
 
 enum OperationMode { manual, automatic };
 

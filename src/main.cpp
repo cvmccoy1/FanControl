@@ -18,22 +18,27 @@ unsigned long fallingEdgeTime = 0;  // Used for debouncing the encoder switch bu
 MyPciListenerImp switchListener(MODE_TOGGLE_SWITCH_PIN, OnSwitchPinChange, true);
 
 // The Stored Data Manager (EEPROM Settings)
-StoredDataManager* storedDataManager;
+StoredDataManager* storedDataManager = nullptr;
 
 // The State Manager
 StateManager* stateManager;
 
 #define FAST_ACTIVITY_LOOP_INTERVAL  200
-#define SLOW_ACTIVITY_LOOP_INTERVAL  1000
-unsigned long gActivityInterval = FAST_ACTIVITY_LOOP_INTERVAL;   
+#define SLOW_ACTIVITY_LOOP_INTERVAL  1000  
 unsigned long lastTime;
 volatile bool hasStateTriggered = false;
 
+unsigned long GetActivityInterval()
+{
+  if (storedDataManager != nullptr)
+    return storedDataManager->getIsRpmsDisplayed() ? SLOW_ACTIVITY_LOOP_INTERVAL : FAST_ACTIVITY_LOOP_INTERVAL;
+  else
+    return FAST_ACTIVITY_LOOP_INTERVAL;
+}
+
 bool inline HasActivityIntervalElapsed(long currentTime)
-{  
-  gActivityInterval = storedDataManager->getIsRpmsDisplayed() ? SLOW_ACTIVITY_LOOP_INTERVAL : FAST_ACTIVITY_LOOP_INTERVAL;
-  return ((currentTime - lastTime) > gActivityInterval);
-; 
+{   
+  return ((currentTime - lastTime) > GetActivityInterval());
 }
 
 /*********************************************************/
@@ -48,7 +53,7 @@ void setup()
   PciManager.registerListener(&switchListener);
   storedDataManager = new StoredDataManager();
   stateManager = new StateManager(&lcd, storedDataManager);
-  lastTime = millis() - gActivityInterval;
+  lastTime = millis() - GetActivityInterval();
 }
 
 /*********************************************************/

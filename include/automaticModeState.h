@@ -9,8 +9,8 @@ class AutomaticModeState : public BaseNormalModeState
         PID *_fanPIDController = nullptr;
 
         //PID parameters. Using defaults.
-        double kp=10.0; //2;   //proportional parameter
-        double ki=1.0;  //5;   //integral parameter
+        double kp=2.0;  //2;   //proportional parameter
+        double ki=5.0;  //5;   //integral parameter
         double kd=1.0;  //1;   //derivative parameter
 
         // Input: the current temperature
@@ -18,8 +18,8 @@ class AutomaticModeState : public BaseNormalModeState
 
         // Output: the PWM value (between minimum and maximum PWM).
         double command;
-        double commandMin = 0;
-        double commandMax = 255;
+        double commandMin = 0.0;
+        double commandMax = 255.0;
 
         //Setpoint: the desired temperture;
         double desiredTemperature;
@@ -38,9 +38,17 @@ class AutomaticModeState : public BaseNormalModeState
             BaseNormalModeState::enter();
             dispose();  // Clean up any left over PID object
             desiredTemperature = _storedDataManager->getDesiredTemperature();
-            kp = (double)_storedDataManager->getPidProportional() / 10.0;
-            ki = (double)_storedDataManager->getPidIntegral() / 10.0;
-            kd = (double)_storedDataManager->getPidDerivative()/ 10.0;             
+            kp = (double)_storedDataManager->getPidProportional() / 100.0;
+            ki = (double)_storedDataManager->getPidIntegral() / 100.0;
+            kd = (double)_storedDataManager->getPidDerivative()/ 100.0;
+            /*Serial.print("Setpoint = ");
+            Serial.print(desiredTemperature);
+            Serial.print("; kp = ");
+            Serial.print(kp);
+            Serial.print("; ki = ");
+            Serial.print(ki);                     
+            Serial.print("; kd = ");
+            Serial.println(kd); */           
             //init PID
             _fanPIDController = new PID(&currentTemperature, &command, &desiredTemperature, kp, ki, kd, REVERSE);
             //turn the PID on
@@ -55,8 +63,14 @@ class AutomaticModeState : public BaseNormalModeState
         void GetFanSpeedPWM() override
         {
             currentTemperature = _temperature;
-            _fanPIDController->Compute();
-            _fanSpeedPWM = command;
+            if (_fanPIDController->Compute())
+            {
+                _fanSpeedPWM = command;
+                /*Serial.print("CurrentTemperature = ");
+                Serial.print(currentTemperature); 
+                Serial.print("; FanSpeedPWM = ");
+                Serial.println(_fanSpeedPWM);*/  
+            }
         }
         
     public:

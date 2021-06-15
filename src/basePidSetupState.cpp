@@ -28,16 +28,16 @@ BasePidSetupState::BasePidSetupState(State state, LiquidCrystal_I2C *lcd, Stored
 
 void BasePidSetupState::display()
 {
-    int x = _encoderValue / 10;
-    int y = _encoderValue % 10;
-    snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("  PID k%c: %2d.%1d  "), _symbol, x, y);
+    int x = _encoderValue / 100;
+    int y = _encoderValue % 100;
+    snprintf_P(_line[1], LCD_COLUMNS+1, PSTR(" PID k%c: %2d.%02d  "), _symbol, x, y);
     BaseSetupModeState::display();
 }
 void BasePidSetupState::enter()
 {
     BaseSetupModeState::enter();
     _encoderValue = (_storedDataManager->*_getValue)();
-    _encoderAdjustment = 2;
+    _encoderAdjustment = 1;
 }
 void BasePidSetupState::leave()
 {

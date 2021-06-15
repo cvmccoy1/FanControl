@@ -13,7 +13,11 @@ class DesiredTempSetupState : public BaseSetupModeState
     protected:
         void display() override
         {
-            snprintf_P(_line[1], LCD_COLUMNS+1, PSTR(" Fans On At %3d\337"), _encoderValue);
+            if (_storedDataManager->getMode() == manual)
+                snprintf_P(_line[1], LCD_COLUMNS+1, PSTR(" Fans On At %3d\337"), _encoderValue);
+            else
+                snprintf_P(_line[1], LCD_COLUMNS+1, PSTR(" Set Point: %3d\337"), _encoderValue);
+                
             BaseSetupModeState::display();
         }
         void enter() override

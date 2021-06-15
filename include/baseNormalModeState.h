@@ -14,8 +14,8 @@ class BaseNormalModeState : public BaseState
     private:
         static int _tachCounter[NUMBER_OF_FANS];
         MyPciListenerImp* _listener[NUMBER_OF_FANS];
-        int _calcInterval;
-        int _calcCounter;
+        int _numberOfCyclesToDisplay;
+        int _displayCycleCounter;
         DisplayState _displayState;
         bool _isRpmsDisplayed;
 
