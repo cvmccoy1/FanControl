@@ -8,7 +8,7 @@
 #include "stateMgr.h"
 
 // Set the LCD address to 0x27 and cofigure for a 16 chars and 2 line display
-LiquidCrystal_I2C lcd(0x27, 16, 2); 
+LiquidCrystal_I2C lcd(0x27, LCD_COLUMNS, LCD_ROWS); 
 
 // Set up the Roto Encoder's Push Button Switch
 #define MODE_TOGGLE_SWITCH_PIN 4
@@ -75,7 +75,7 @@ void loop()
 void OnSwitchPinChange(byte pin, byte pinState)
 {
   // Make sure the encoder switch has constantly been in the low state (button pressed) 
-  // for at least the DEBOUCE_INTERVAL. Otherwise, it is not considered a value button press.
+  // for at least the DEBOUCE_INTERVAL. Otherwise, it is not considered a valid button press.
   bool isLowState = (pinState == CHANGEKIND_HIGH_TO_LOW);
   if (isLowState)
   {

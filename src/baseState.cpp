@@ -14,11 +14,11 @@ void BaseState::display()
 {
     for (int row = 0; row < LCD_ROWS; row++)
     {
-        updateDisplay(row);
+        updateDisplayRow(row);
     }
 }
 
-void BaseState::updateDisplay(int row)
+void BaseState::updateDisplayRow(int row)
 {
     for (int column = 0; column < LCD_COLUMNS; column++)
     {

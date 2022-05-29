@@ -2,12 +2,6 @@
 #include <DallasTemperature.h>
 #include "baseNormalModeState.h"
 
-// Set up the Cooling Fans PWM
-#define FAN1_PWM_PIN 5
-#define FAN2_PWM_PIN 6
-
-// Set up the Cooling Fan's Tachometer
-#define BASE_FAN_TACH_PIN 8
 
 // The fan provides two interrupts (counts) per revolution, so we need to account for that in our RPM calculations
 #define COUNTS_PER_REVOLUTION 2
@@ -16,14 +10,23 @@
 // every so often.
 #define UPDATE_INTERVAL 3000  // in milliseconds
 
-
 // Set up the Temperture Sensor
-#define TEMPERTURE_SENSOR_PIN 7
+#define TEMPERATURE_SENSOR_PIN 7
 // Set up a oneWire instance to communicate with any OneWire devices  
 // (not just Maxim/Dallas temperature ICs) 
-OneWire oneWire(TEMPERTURE_SENSOR_PIN); 
+OneWire oneWire(TEMPERATURE_SENSOR_PIN);
 // Pass the oneWire reference to a DallasTemperature component. 
 DallasTemperature sensors(&oneWire);
+
+// Specify which PWM pins to use (on the nano, 3, 5, 6, 9, 10, and 11 are available)
+#define FAN1_PWM_PIN 5
+#define FAN2_PWM_PIN 6
+// Specify which input pins will act as the Cooling Fans' Tachometer
+#define FAN1_TACH_PIN 8
+#define FAN2_TACH_PIN 9
+
+const byte FAN_PWM_PIN[NUMBER_OF_FANS] = { FAN1_PWM_PIN, FAN2_PWM_PIN };
+const byte FAN_TACH_PIN[NUMBER_OF_FANS] = { FAN1_TACH_PIN, FAN2_TACH_PIN };
 
 // Static variable definitions
 int BaseNormalModeState::_tachCounter[NUMBER_OF_FANS];
@@ -32,8 +35,10 @@ int BaseNormalModeState::_tachCounter[NUMBER_OF_FANS];
 BaseNormalModeState::BaseNormalModeState(State state, LiquidCrystal_I2C *lcd, StoredDataManager *storedDataManager) : 
     BaseState(state, lcd, storedDataManager, 0, 255)
 {
-    pinMode(FAN1_PWM_PIN, OUTPUT);
-    pinMode(FAN2_PWM_PIN, OUTPUT);
+    for (int fanNumberIndex = 0; fanNumberIndex < NUMBER_OF_FANS; fanNumberIndex++)
+    {
+        pinMode(FAN_PWM_PIN[fanNumberIndex], OUTPUT);
+    }
     sensors.begin();   //initialize the temperture sensor
 }
  
@@ -48,13 +53,27 @@ unsigned long BaseNormalModeState::calcRPM(byte index)
     return rpm;
 }
 
-void BaseNormalModeState::OnFanTachPinChange(byte fanPin, byte pinState)
+byte BaseNormalModeState::FindIndexByFanTachPin(byte fanTachPin)
+{
+    int index = 0;
+    while (index < NUMBER_OF_FANS)
+    {
+        if (FAN_TACH_PIN[index] == fanTachPin) {
+            break;
+        }
+        index++;
+    }
+    return index;
+}
+
+void BaseNormalModeState::OnFanTachPinChange(byte fanTachPin, byte pinState)
 {
     // There are two pulses per revolution, resulting in 4 interrupts per revolution...one on each 
     // raising and trailing edge. We are only going to count the raising edge transitions.
     if (pinState == CHANGEKIND_LOW_TO_HIGH)
     {
-        byte index = fanPin - BASE_FAN_TACH_PIN;
+
+        byte index = FindIndexByFanTachPin(fanTachPin);
         noInterrupts();
         _tachCounter[index]++;
         interrupts();
@@ -93,6 +112,7 @@ void BaseNormalModeState::display()
             {
                 // Change to start displaying the Fan RPMs
                 _displayState = rpms;
+                // TODO: Change the following code so that it can handle displaying more than two fan speeds
                 int rpm1 = calcRPM(0);
                 int rpm2 = calcRPM(1);
                 snprintf_P(_line[1], LCD_COLUMNS+1, PSTR("Rpm1:%4d 2:%4d"), rpm1, rpm2);
@@ -122,8 +142,10 @@ void BaseNormalModeState::updateValues()
     BaseState::updateValues();
     GetCurrentTemperature();
     GetFanSpeedPWM();
-    analogWrite(FAN1_PWM_PIN, _fanSpeedPWM);
-    analogWrite(FAN2_PWM_PIN, _fanSpeedPWM);
+    for (int fanNumberIndex = 0; fanNumberIndex < NUMBER_OF_FANS; fanNumberIndex++)
+    {
+        analogWrite(FAN_PWM_PIN[fanNumberIndex], _fanSpeedPWM);
+    }
 }
 
 void BaseNormalModeState::enter()
@@ -136,13 +158,13 @@ void BaseNormalModeState::enter()
     _displayCycleCounter = _numberOfCyclesToDisplay + 1;
     if (_isRpmsDisplayed)
     {
-        for (int fanNumber = 0; fanNumber < NUMBER_OF_FANS; fanNumber++)
+        for (int fanNumberIndex = 0; fanNumberIndex < NUMBER_OF_FANS; fanNumberIndex++)
         {
-            byte fanTachPin = BASE_FAN_TACH_PIN + fanNumber;
+            byte fanTachPin = FAN_TACH_PIN[fanNumberIndex];
             MyPciListenerImp* listener = new MyPciListenerImp(fanTachPin, OnFanTachPinChange, true);
             PciManager.registerListener(listener);
-            _listener[fanNumber] = listener;
-            _tachCounter[fanNumber] = 0;
+            _listener[fanNumberIndex] = listener;
+            _tachCounter[fanNumberIndex] = 0;
         }
     }
 }
@@ -152,9 +174,9 @@ void BaseNormalModeState::leave()
     BaseState::leave();
     if (_isRpmsDisplayed)
     {
-        for (int fanNumber = 0; fanNumber < NUMBER_OF_FANS; fanNumber++)
+        for (int fanNumberIndex = 0; fanNumberIndex < NUMBER_OF_FANS; fanNumberIndex++)
         {
-            MyPciListenerImp* listener = _listener[fanNumber];
+            MyPciListenerImp* listener = _listener[fanNumberIndex];
             PciManager.removeListener(listener);
         }
     }

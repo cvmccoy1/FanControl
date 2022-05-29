@@ -5,6 +5,7 @@
 #include "main.h"
 #include "baseState.h"
 
+// Set up the Cooling Fans
 #define NUMBER_OF_FANS 2
 
 enum DisplayState { temperature, rpms, numberOfDisplayStates };
@@ -19,8 +20,9 @@ class BaseNormalModeState : public BaseState
         DisplayState _displayState;
         bool _isRpmsDisplayed;
 
+        static byte FindIndexByFanTachPin(byte fanTachPin);
         unsigned long calcRPM(byte index);
-        static void OnFanTachPinChange(byte fanPin, byte pinState);
+        static void OnFanTachPinChange(byte fanTachPin, byte pinState);
         void GetCurrentTemperature();
        
 
