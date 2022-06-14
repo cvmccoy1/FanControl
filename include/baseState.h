@@ -15,8 +15,9 @@ class BaseState
         int32_t _encoderMinValue;
         int32_t _encoderMaxValue;
         static char _line_copy[LCD_ROWS][LCD_COLUMNS];
-        void updateDisplay(int row);
+        void updateDisplayRow(int row);
         void clearDisplay();
+        
     protected:
         LiquidCrystal_I2C *_lcd;
         StoredDataManager *_storedDataManager;

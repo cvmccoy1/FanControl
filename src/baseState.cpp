@@ -4,7 +4,8 @@
 // Set up the Roto Encoder
 #define ROTO_ENCODER_CLK_PIN 2
 #define ROTO_ENCODER_DT_PIN 3
-Encoder rotoEncoder(ROTO_ENCODER_CLK_PIN, ROTO_ENCODER_DT_PIN);
+// NOTE: The pins can be reversed if rotating clockwise doesn't increase the value
+Encoder rotoEncoder(ROTO_ENCODER_DT_PIN, ROTO_ENCODER_CLK_PIN); 
 
 // Static variable definitions
 char BaseState::_line[LCD_ROWS][LCD_COLUMNS+1];
@@ -14,11 +15,11 @@ void BaseState::display()
 {
     for (int row = 0; row < LCD_ROWS; row++)
     {
-        updateDisplay(row);
+        updateDisplayRow(row);
     }
 }
 
-void BaseState::updateDisplay(int row)
+void BaseState::updateDisplayRow(int row)
 {
     for (int column = 0; column < LCD_COLUMNS; column++)
     {
