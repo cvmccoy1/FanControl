@@ -86,7 +86,7 @@ void OnSwitchPinChange(byte pin, byte pinState)
   }
   else
   {
-    // Raisting Edge Trigger
+    // Raising Edge Trigger
     noInterrupts();
     if (fallingEdgeTime != 0)  // Make sure we have already seen the falling edge
     {

@@ -20,7 +20,8 @@ class ManualModeState : public BaseNormalModeState
         bool inline HasEncoderValueChanged() { return _encoderValue != _currentEncoderValue; }
         bool inline IsWaitingForStablization() { return _startTime > 0 ; }
         bool inline HasFanSpeedStablized() { return (millis() - _startTime) >= STABLE_INTERVAL; }
-        bool inline HasReachedDesiredTemperature() { return _temperature < _storedDataManager->getDesiredTemperature(); }
+        bool inline IsValidTemperature() { return _temperature >= 0;  }
+        bool inline HasReachedDesiredTemperature() { return IsValidTemperature() && _temperature < _storedDataManager->getDesiredTemperature(); }
         void CheckFanSpeedOffCondition()
         {
             if (HasReachedDesiredTemperature() && _fanSpeedPWM != 0)
