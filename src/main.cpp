@@ -7,24 +7,24 @@
 #include "storedData.h"
 #include "stateMgr.h"
 
-// Set the LCD address to 0x27 and cofigure for a 16 chars and 2 line display
-LiquidCrystal_I2C lcd(0x27, LCD_COLUMNS, LCD_ROWS); 
+// Set the LCD address to 0x27 and cofigure for a 16 character / 2 line display
+LiquidCrystal_I2C lcd(0x27, LCD_COLUMNS, LCD_ROWS);
 
 // Set up the Roto Encoder's Push Button Switch
 #define MODE_TOGGLE_SWITCH_PIN 4
-#define DEBOUCE_INTERVAL 50  // In milliseconds
+#define DEBOUCE_INTERVAL 50 // In milliseconds
 void OnSwitchPinChange(byte pin, byte pinState);
-unsigned long fallingEdgeTime = 0;  // Used for debouncing the encoder switch button
+unsigned long fallingEdgeTime = 0; // Used for debouncing the encoder switch button
 MyPciListenerImp switchListener(MODE_TOGGLE_SWITCH_PIN, OnSwitchPinChange, true);
 
 // The Stored Data Manager (EEPROM Settings)
-StoredDataManager* storedDataManager = nullptr;
+StoredDataManager *storedDataManager = nullptr;
 
 // The State Manager
-StateManager* stateManager;
+StateManager *stateManager;
 
-#define FAST_ACTIVITY_LOOP_INTERVAL  200
-#define SLOW_ACTIVITY_LOOP_INTERVAL  1000  
+#define FAST_ACTIVITY_LOOP_INTERVAL 200
+#define SLOW_ACTIVITY_LOOP_INTERVAL 1000
 unsigned long lastTime;
 volatile bool hasStateTriggered = false;
 
@@ -37,19 +37,19 @@ unsigned long GetActivityInterval()
 }
 
 bool inline HasActivityIntervalElapsed(long currentTime)
-{   
+{
   return ((currentTime - lastTime) > GetActivityInterval());
 }
 
 /*********************************************************/
 void setup()
 {
-  //Serial.begin(9600);
+  // Serial.begin(9600);
 
-  lcd.init();       //initialize the lcd
-  lcd.clear();      //clear the lcd display
-  lcd.backlight();  //open the backlight
-  
+  lcd.init();      // initialize the lcd
+  lcd.clear();     // clear the lcd display
+  lcd.backlight(); // open the backlight
+
   PciManager.registerListener(&switchListener);
   storedDataManager = new StoredDataManager();
   stateManager = new StateManager(&lcd, storedDataManager);
@@ -57,7 +57,7 @@ void setup()
 }
 
 /*********************************************************/
-void loop() 
+void loop()
 {
   long currentTime = millis();
   if (hasStateTriggered || HasActivityIntervalElapsed(currentTime))
@@ -70,11 +70,10 @@ void loop()
   }
 }
 
-
 /************************************************************/
 void OnSwitchPinChange(byte pin, byte pinState)
 {
-  // Make sure the encoder switch has constantly been in the low state (button pressed) 
+  // Make sure the encoder switch has constantly been in the low state (button pressed)
   // for at least the DEBOUCE_INTERVAL. Otherwise, it is not considered a valid button press.
   bool isLowState = (pinState == CHANGEKIND_HIGH_TO_LOW);
   if (isLowState)
@@ -88,7 +87,7 @@ void OnSwitchPinChange(byte pin, byte pinState)
   {
     // Raising Edge Trigger
     noInterrupts();
-    if (fallingEdgeTime != 0)  // Make sure we have already seen the falling edge
+    if (fallingEdgeTime != 0) // Make sure we have already seen the falling edge
     {
       unsigned long timeSinceFallingEdge = millis() - fallingEdgeTime;
       if (timeSinceFallingEdge >= DEBOUCE_INTERVAL)

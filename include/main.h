@@ -1,4 +1,4 @@
 #pragma once
 
-// The amount of time each between each Activity Call
+// The amount of time between each Activity Call
 unsigned long GetActivityInterval();
